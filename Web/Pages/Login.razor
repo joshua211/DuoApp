@@ -1,0 +1,37 @@
+﻿@page "/Login"
+@inject IDuolingoClient client
+@inject NavigationManager nav
+@inject ISnackbar snackbar
+@inject IValuePersistence persistence
+
+<h1 class="text-center font-medium text-lg mt-5 mb-5">Log in with your duolingo username</h1>
+
+<div class="flex flex-col align-center">
+    <MudTextField Error="@showError" Style="width: 300px" Label="Username" @bind-Value=username></MudTextField>
+    <MudButton OnClick="OnClick" Color="Color.Primary" Class="mt-5" >Login</MudButton>
+</div>
+
+@code {
+    private string username;
+    private bool showError;
+
+    private async Task OnClick()
+    {
+        showError = false;
+        if (string.IsNullOrEmpty(username))
+        {
+            showError = true;
+            return;
+        }
+
+        var result = await client.Authenticate(username);
+        if(result.IsAuthenticated)
+        {
+            await persistence.StoreValueAsync("username", username);
+            snackbar.Add("Success!", Severity.Success);
+            nav.NavigateTo("/");
+        }
+        else
+            snackbar.Add("Something went wrong!", Severity.Warning);
+    }
+}
