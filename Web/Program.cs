@@ -13,6 +13,7 @@ using Core.Interfaces;
 using Core.Application;
 using Core.Entities;
 using Web.Persistence;
+using Core.Options;
 
 namespace Web
 {
@@ -24,20 +25,14 @@ namespace Web
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.Configure<ClientOptions>(options =>
+            {
+                options = builder.Configuration.GetSection("clientOptions").Get<ClientOptions>();
+            });
             builder.Services.AddMudServices();
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddSingleton<IDuolingoClient, DuolingoClient>();
             builder.Services.AddSingleton<IValuePersistence, LocalPersistence>();
-            builder.Services.AddSingleton<AuthenticationEntity>(new AuthenticationEntity()
-            {
-                DistinctId = "782244993",
-                Timezone = "Europe/Berlin",
-                FromLanguage = "en",
-                LearningLanguage = "pt",
-                LandingUrl = "https://www.duolingo.com/",
-                InitialReferrer = "https://www.duolingo.com/learn",
-                LastReferrer = "https://www.google.com/"
-            });
 
             await builder.Build().RunAsync();
         }

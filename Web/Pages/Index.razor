@@ -3,7 +3,25 @@
 @inject IValuePersistence persistence
 @inject NavigationManager nav
 
-skills
+@if(skills is null)
+{
+    <div>Loading skills...</div>
+}
+else 
+{
+    @if(skills.Any())
+    {
+        <ul>
+            @foreach (var skill in skills)
+            {
+            <li>@skill.Name</li> 
+            }
+        </ul>
+    }
+    else {
+        <div>No skills found!</div>
+    }
+}
 
 @code {
 
@@ -18,7 +36,7 @@ skills
         if(!client.IsAuthenticated)
             nav.NavigateTo("/login");
          else
-            skills = (await client.GetSkillsAsync()).ToList();
+            skills = (await client.GetSkillsAsync())?.ToList() ?? new List<Skill>();
     }
 
 }
