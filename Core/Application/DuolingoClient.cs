@@ -11,6 +11,8 @@ using System.Net.Http.Headers;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
+using Core.Options;
+using Microsoft.Extensions.Options;
 
 namespace Core.Application
 {
@@ -18,18 +20,18 @@ namespace Core.Application
     {
         private readonly HttpClient client;
         private readonly ILogger<IDuolingoClient> logger;
-        private readonly AuthenticationEntity entity;
+        private readonly ClientOptions options;
         private readonly IValuePersistence persistence;
         private string username;
 
-        public DuolingoClient(AuthenticationEntity entity, IValuePersistence persistence)
+        public DuolingoClient(IValuePersistence persistence, IOptions<ClientOptions> options)
         {
             client = new HttpClient()
             {
                 BaseAddress = new Uri("https://www.duolingo.com/"),
             };
-            this.entity = entity;
             this.persistence = persistence;
+            this.options = options.Value;
         }
 
         public bool IsAuthenticated { get; private set; }
@@ -61,7 +63,7 @@ namespace Core.Application
 
         private async Task<string> GetValidJwtTokenAsync()
         {
-            var json = JsonConvert.SerializeObject(entity);
+            var json = JsonConvert.SerializeObject(options.AuthObject);
             var result = await client.PostAsync("/2017-06-30/users?fields=id", new StringContent(json));
 
             result.EnsureSuccessStatusCode();
@@ -76,9 +78,8 @@ namespace Core.Application
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri($"https://crossorigin.me/https://www.duolingo.com/users/{username}")
+                RequestUri = new Uri($"http://localhost:7071/api/GetSkills?{username}")
             };
-            request.Headers.Add("Origin", new[] { "https://www.duolingo.com/" });
             try
             {
 
