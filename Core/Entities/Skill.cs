@@ -13,6 +13,8 @@ namespace Core.Entities
         public List<string> Lexemes { get; set; }
         [JsonProperty("title")]
         public string Name { get; set; }
+        [JsonProperty("url_title")]
+        public string UrlTitle { get; set; }
         [JsonProperty("mastered")]
         public bool Mastered { get; set; }
     }

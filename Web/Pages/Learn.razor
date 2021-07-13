@@ -1,0 +1,36 @@
+@page "/Learn/{name}"
+@inject IDuolingoClient client
+
+<h1>@skill.Name</h1>
+<div>
+    @words.Last().Value
+</div>
+<MudButton OnClick="OnClick" Color="Color.Primary">Next</MudButton>
+
+@code {
+    [Parameter]
+    public string SkillName { get; set; }
+    private Skill skill { get; set; }
+    private List<Word> words;
+    private int wordIndex = 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        skill = (await client.GetSkillsAsync()).First(s => s.UrlTitle == SkillName);
+        words = new List<Word>();
+        await NextWord();
+    }
+
+    private async Task NextWord()
+    {
+        if(wordIndex >= skill.Lexemes.Count)
+            return;
+
+        var word = await client.GetWordAsync(skill.Lexemes[wordIndex]);
+        wordIndex++;
+        words.Add(word);
+    }
+
+    private async Task OnClick() => await NextWord();
+
+}

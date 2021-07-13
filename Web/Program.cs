@@ -25,10 +25,7 @@ namespace Web
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            builder.Services.Configure<ClientOptions>(options =>
-            {
-                options = builder.Configuration.GetSection("clientOptions").Get<ClientOptions>();
-            });
+            builder.Services.AddSingleton(builder.Configuration.GetSection("clientOptions").Get<ClientOptions>());
             builder.Services.AddMudServices();
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddSingleton<IDuolingoClient, DuolingoClient>();

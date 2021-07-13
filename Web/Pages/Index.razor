@@ -11,12 +11,14 @@ else
 {
     @if(skills.Any())
     {
-        <ul>
-            @foreach (var skill in skills)
-            {
-            <li>@skill.Name</li> 
-            }
-        </ul>
+        var i = 0;
+        foreach(var skill in skillsToDisplay)
+        {
+            var color = i % 2 == 0 ? Color.Primary : Color.Secondary;
+            i++;
+            var link = $"/Learn/{skill.UrlTitle}";
+            <MudChip Link=@link style="margin: 0.5rem" Color=@color Size="Size.Large">@skill.Name</MudChip>
+        }
     }
     else {
         <div>No skills found!</div>
@@ -26,6 +28,7 @@ else
 @code {
 
     List<Skill> skills;
+    IEnumerable<Skill> skillsToDisplay;
 
     protected async override Task OnInitializedAsync()
     {
@@ -36,7 +39,10 @@ else
         if(!client.IsAuthenticated)
             nav.NavigateTo("/login");
          else
+         {
             skills = (await client.GetSkillsAsync())?.ToList() ?? new List<Skill>();
+            skillsToDisplay = skills.OrderBy(s => s.Name);
+         }
     }
 
 }

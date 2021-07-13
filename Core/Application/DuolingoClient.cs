@@ -24,14 +24,14 @@ namespace Core.Application
         private readonly IValuePersistence persistence;
         private string username;
 
-        public DuolingoClient(IValuePersistence persistence, IOptions<ClientOptions> options)
+        public DuolingoClient(IValuePersistence persistence, ClientOptions options)
         {
             client = new HttpClient()
             {
                 BaseAddress = new Uri("https://www.duolingo.com/"),
             };
             this.persistence = persistence;
-            this.options = options.Value;
+            this.options = options;
         }
 
         public bool IsAuthenticated { get; private set; }
@@ -64,17 +64,24 @@ namespace Core.Application
         private async Task<string> GetValidJwtTokenAsync()
         {
             var json = JsonConvert.SerializeObject(options.AuthObject);
-            var result = await client.PostAsync("/2017-06-30/users?fields=id", new StringContent(json));
+            var request = new HttpRequestMessage()
+            {
+                Content = new StringContent(json),
+                Method = HttpMethod.Post,
+                RequestUri = new Uri("http://localhost:7071/api/Authenticate")
+            };
+            var result = await client.SendAsync(request);
 
             result.EnsureSuccessStatusCode();
-            if (result.Headers.TryGetValues("jwt", out var values))
-                return values.First();
-            else
-                throw new Exception("No jwt header present");
+            return await result.Content.ReadAsStringAsync();
         }
 
         public async Task<IEnumerable<Skill>> GetSkillsAsync()
         {
+            var json = await persistence.GetValueAsync("skills");
+            if (!string.IsNullOrEmpty(json))
+                return JsonConvert.DeserializeObject<List<Skill>>(json);
+
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get,
@@ -86,11 +93,13 @@ namespace Core.Application
                 var result = await client.SendAsync(request);
                 result.EnsureSuccessStatusCode();
 
-                var json = await result.Content.ReadAsStringAsync();
+                json = await result.Content.ReadAsStringAsync();
 
                 var userObject = JsonConvert.DeserializeObject<JObject>(json);
-                var skills = ((JArray)userObject["language_data"]["pt"]["skills"]).ToObject<List<Skill>>();
-                return skills;
+                var skills = ((JArray)userObject["language_data"]["pt"]["skills"]);
+
+                await persistence.StoreValueAsync("skills", skills.ToString());
+                return skills.ToObject<List<Skill>>();
             }
             catch (Exception e)
             {
