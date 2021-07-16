@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Core.Entities;
 using Core.Interfaces;
 using System;
+using System.Collections;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
@@ -76,7 +77,9 @@ namespace Core.Application
             return await result.Content.ReadAsStringAsync();
         }
 
-        public async Task<IEnumerable<Skill>> GetSkillsAsync()
+        public async Task<IEnumerable<Skill>> GetSkillsAsync() => await GetSkills();
+
+        private async Task<IEnumerable<Skill>> GetSkills()
         {
             var json = await persistence.GetValueAsync("skills");
             if (!string.IsNullOrEmpty(json))
@@ -107,6 +110,8 @@ namespace Core.Application
             }
             return null;
         }
+
+        public async Task<Skill> GetSkillAsync(string name) => (await GetSkills()).First(s => s.Name == name);
 
         public async Task<Word> GetWordAsync(string id)
         {

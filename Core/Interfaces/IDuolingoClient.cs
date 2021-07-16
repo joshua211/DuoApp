@@ -9,6 +9,7 @@ namespace Core.Interfaces
         bool IsAuthenticated { get; }
         Task<AuthenticationResult> Authenticate(string username);
         Task<IEnumerable<Skill>> GetSkillsAsync();
+        Task<Skill> GetSkillAsync(string name);
         Task<Word> GetWordAsync(string id);
     }
 }

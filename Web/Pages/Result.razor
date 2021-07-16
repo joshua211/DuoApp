@@ -1,0 +1,23 @@
+﻿@page "/Result/{Id}"
+@inject ObjectService service
+<h3>Result</h3>
+
+@if (result is not null)
+{
+    <div>
+        @result.CorrectWords/@result.TotalWords
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private LearnResult result;
+
+    protected override void OnParametersSet()
+    {
+        result = service.Get<LearnResult>(Id);
+    }
+
+}

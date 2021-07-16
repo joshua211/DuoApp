@@ -1,36 +1,132 @@
-@page "/Learn/{name}"
+@page "/Learn/{Name}"
+@page "/Learn"
+@using Web.Services
 @inject IDuolingoClient client
+@inject NavigationManager nav
+@inject ObjectService objectService
 
-<h1>@skill.Name</h1>
-<div>
-    @words.Last().Value
+<div @ref="element" @onkeydown="@OnKeyDown" class="flex flex-col items-center h-full justify-between">
+    @if (isReady)
+    {
+        <div class="flex flex-col items-center">
+            <MudText Class="mt-5" Typo="Typo.h4">Learning @title</MudText>
+            <div class="flex flex-row items-end mt-10">
+                <MudText Class="mr-5">@words[index].Value:</MudText>
+                <MudTextField @bind-Value="inputText" Immediate="true" Clearable="true" TextChanged="OnChange" Variant="Variant.Text"></MudTextField>
+            </div>
+            <div class="mt-6">
+                @if (isCorrect)
+                {
+                    <MudButton OnClick="NextWord" Color="Color.Primary" Variant="Variant.Outlined">@(lessonDone ? "Show result" : "Next")</MudButton>
+                }
+                else
+                {
+                    <MudButton OnClick="NextWord">Skip</MudButton>
+                    <MudTooltip Text="Show Hint">
+                        <MudIconButton Icon="@Icons.Filled.AutoStories"></MudIconButton>
+                    </MudTooltip>
+                }
+            </div>
+        </div>
+        <div class="mb-5">
+            <MudText Color="Color.Primary">@(index + 1)/@lexemes.Count</MudText>
+        </div>
+    }
+    else
+    {
+        <div>Loading..</div>
+    }
 </div>
-<MudButton OnClick="OnClick" Color="Color.Primary">Next</MudButton>
+
 
 @code {
+
     [Parameter]
-    public string SkillName { get; set; }
-    private Skill skill { get; set; }
+    public string Name { get; set; }
+    private ElementReference element;
+    private List<string> lexemes;
     private List<Word> words;
-    private int wordIndex = 0;
+    private string title;
+    private int index = -1;
+    private bool isReady;
+    private string inputText;
+    private bool isCorrect;
+    private bool lessonDone;
+    private LearnResult result;
 
     protected override async Task OnParametersSetAsync()
     {
-        skill = (await client.GetSkillsAsync()).First(s => s.UrlTitle == SkillName);
-        words = new List<Word>();
-        await NextWord();
+        if (string.IsNullOrEmpty(Name))
+        {
+    //random
+        }
+        else
+        {
+            var skill = (await client.GetSkillsAsync()).First(s => s.UrlTitle == Name);
+            title = skill.Name;
+            lexemes = skill.Lexemes;
+            words = new List<Word>();
+            result = new LearnResult()
+            {
+                Skill = skill,
+                LearnedWords = new Dictionary<Word, bool>(),
+                TotalWords = lexemes.Count
+            };
+
+            await NextWord();
+            isReady = true;
+        }
     }
 
     private async Task NextWord()
     {
-        if(wordIndex >= skill.Lexemes.Count)
+        if (lessonDone)
+        {
+            ShowResult();
             return;
+        }
+        
+        isCorrect = false;
+        inputText = string.Empty;
 
-        var word = await client.GetWordAsync(skill.Lexemes[wordIndex]);
-        wordIndex++;
+        var word = await client.GetWordAsync(lexemes[index +1]);
+        
+        result.LearnedWords[word] = false;
         words.Add(word);
+
+        index++;
+        if (index +1 == lexemes.Count)
+            lessonDone = true;
     }
 
-    private async Task OnClick() => await NextWord();
+    private void ShowResult()
+    {
+        result.CorrectWords = result.LearnedWords.Count(kv => kv.Value);
+        objectService[result.Id] = result;
+        nav.NavigateTo("/Result/" + result.Id);
+    }
+
+    private void OnChange()
+    {
+        var translations = words[index].Translation.Replace(" ", string.Empty).ToLower().Split(',');
+        var input = inputText.ToLower();
+        if (!translations.Contains(input)) return;
+        
+        isCorrect = true;
+        result.LearnedWords[words[index]] = true;
+
+    /*Console.WriteLine("--------");
+        foreach (var t in translations)
+        {
+            Console.WriteLine(input + " ? " + t);
+        }
+        Console.WriteLine("--------");*/
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && isCorrect && !lessonDone)
+            await NextWord();
+    }
 
 }

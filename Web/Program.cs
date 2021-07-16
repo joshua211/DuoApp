@@ -14,6 +14,7 @@ using Core.Application;
 using Core.Entities;
 using Web.Persistence;
 using Core.Options;
+using Web.Services;
 
 namespace Web
 {
@@ -26,6 +27,7 @@ namespace Web
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddSingleton(builder.Configuration.GetSection("clientOptions").Get<ClientOptions>());
+            builder.Services.AddSingleton<ObjectService>();
             builder.Services.AddMudServices();
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddSingleton<IDuolingoClient, DuolingoClient>();
