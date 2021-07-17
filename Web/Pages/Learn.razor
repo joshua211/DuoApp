@@ -1,18 +1,30 @@
 @page "/Learn/{Name}"
 @page "/Learn"
-@using Web.Services
+@inject IJSRuntime jsRuntime
 @inject IDuolingoClient client
 @inject NavigationManager nav
 @inject ObjectService objectService
 
-<div @ref="element" @onkeydown="@OnKeyDown" class="flex flex-col items-center h-full justify-between">
+<div @onkeydown="@OnKeyDown" class="flex flex-col items-center h-full justify-between">
     @if (isReady)
     {
         <div class="flex flex-col items-center">
             <MudText Class="mt-5" Typo="Typo.h4">Learning @title</MudText>
             <div class="flex flex-row items-end mt-10">
-                <MudText Class="mr-5">@words[index].Value:</MudText>
-                <MudTextField @bind-Value="inputText" Immediate="true" Clearable="true" TextChanged="OnChange" Variant="Variant.Text"></MudTextField>
+                @if (isLoadingWord)
+                {
+                    <MudSkeleton Height="30px" Width="100px" />
+                }
+                else
+                {
+                    <MudText Class="mr-5">@words[index].Value:</MudText>
+                }
+                <MudTextField @bind-Value="inputText"  
+                              Immediate="true" 
+                              Clearable="true" 
+                              Disabled="isLoadingWord" 
+                              TextChanged="OnChange" 
+                              Variant="Variant.Text"></MudTextField>
             </div>
             <div class="mt-6">
                 @if (isCorrect)
@@ -21,9 +33,9 @@
                 }
                 else
                 {
-                    <MudButton OnClick="NextWord">Skip</MudButton>
+                    <MudButton Disabled="isLoadingWord" OnClick="NextWord">Skip</MudButton>
                     <MudTooltip Text="Show Hint">
-                        <MudIconButton Icon="@Icons.Filled.AutoStories"></MudIconButton>
+                        <MudIconButton Disabled="isLoadingWord" Icon="@Icons.Filled.AutoStories"></MudIconButton>
                     </MudTooltip>
                 }
             </div>
@@ -43,7 +55,7 @@
 
     [Parameter]
     public string Name { get; set; }
-    private ElementReference element;
+    private ElementReference input;
     private List<string> lexemes;
     private List<Word> words;
     private string title;
@@ -51,6 +63,7 @@
     private bool isReady;
     private string inputText;
     private bool isCorrect;
+    private bool isLoadingWord;
     private bool lessonDone;
     private LearnResult result;
 
@@ -63,6 +76,13 @@
         else
         {
             var skill = (await client.GetSkillsAsync()).First(s => s.UrlTitle == Name);
+            Console.WriteLine(skill.Name);
+            Console.WriteLine("Learned: " + skill.Learned);
+            Console.WriteLine("Mastered:" + skill.Mastered);
+            foreach (var le in skill.Lexemes)
+            {
+                Console.WriteLine(le);
+            }
             title = skill.Name;
             lexemes = skill.Lexemes;
             words = new List<Word>();
@@ -87,6 +107,8 @@
         }
         
         isCorrect = false;
+        isLoadingWord = true;
+        StateHasChanged();
         inputText = string.Empty;
 
         var word = await client.GetWordAsync(lexemes[index +1]);
@@ -97,6 +119,7 @@
         index++;
         if (index +1 == lexemes.Count)
             lessonDone = true;
+        isLoadingWord = false;
     }
 
     private void ShowResult()

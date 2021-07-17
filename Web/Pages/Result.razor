@@ -1,15 +1,36 @@
 ﻿@page "/Result/{Id}"
 @inject ObjectService service
-<h3>Result</h3>
+@inject NavigationManager nav
+@inject ISnackbar snackbar
 
 @if (result is not null)
 {
     <div>
-        @result.CorrectWords/@result.TotalWords
+        <MudChart ChartType="ChartType.Pie"
+                  Width="300px" Height="300px"
+                  ChartOptions="@(new ChartOptions() {ChartPalette = new[] {"#58cc02", "#e55d5e"}})"
+                  InputData="@(new double[] {result.CorrectWords, result.TotalWords - result.CorrectWords})"
+                  InputLabels="@(new[] {"Correct", "Wrong"})">
+        </MudChart>
+    </div>
+    <MudExpansionPanels>
+        @foreach (var word in result.LearnedWords)
+        {
+            var color = word.Value ? "#58cc02" : "rgb(220, 38, 38)";
+            <MudExpansionPanel Style=@("color: " + color) Text="@word.Key.Value">
+                <div style="color: black">
+                    @word.Key.Translation
+                </div>
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
+    <div class="mt-10 mb-5 flex justify-center">
+        <MudButton Color="Color.Primary" Variant="Variant.Outlined">Try again</MudButton>
     </div>
 }
 
 @code {
+
     [Parameter]
     public string Id { get; set; }
 
@@ -18,6 +39,11 @@
     protected override void OnParametersSet()
     {
         result = service.Get<LearnResult>(Id);
+        if (result is null)
+        {
+            snackbar.Add("No result found!", Severity.Warning);
+            nav.NavigateTo("./");
+        }
     }
 
 }

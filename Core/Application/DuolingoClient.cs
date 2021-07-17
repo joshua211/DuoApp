@@ -102,7 +102,7 @@ namespace Core.Application
                 var skills = ((JArray)userObject["language_data"]["pt"]["skills"]);
 
                 await persistence.StoreValueAsync("skills", skills.ToString());
-                return skills.ToObject<List<Skill>>();
+                return skills.ToObject<List<Skill>>().Where(s => s.Learned);
             }
             catch (Exception e)
             {
