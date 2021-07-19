@@ -24,6 +24,7 @@
                               Clearable="true" 
                               Disabled="isLoadingWord" 
                               TextChanged="OnChange" 
+                              
                               Variant="Variant.Text"></MudTextField>
             </div>
             <div class="mt-6">
@@ -41,9 +42,12 @@
             </div>
         </div>
         <div>
-            <MudText Class="transition-all" Style=@(showHint ? "" : "filter: blur(4px);")>
-                @GetTranslation(words[index].Translation).First()
-            </MudText>
+            @foreach (var translation in GetTranslation(words[index].Translation))
+            {
+                <MudText Class="transition-all" Style=@(showHint ? "" : "filter: blur(4px);")>
+                    @translation
+                </MudText>
+            }
         </div>
         <div class="mb-5">
             <MudText Color="Color.Primary">@(index + 1)/@lexemes.Count</MudText>
@@ -97,6 +101,11 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+         await jsRuntime.InvokeVoidAsync("focusInput");
+    }
+
     private async Task NextWord()
     {
         if (lessonDone)
@@ -111,7 +120,6 @@
         inputText = string.Empty;
 
         var word = await client.GetWordAsync(lexemes[index +1]);
-        
         result.LearnedWords[word] = false;
         words.Add(word);
 
@@ -137,11 +145,12 @@
         foreach (var t in translations)
         {
             Console.WriteLine(input + " ? " + t);
-        }*/
-        Console.WriteLine("--------");
+        }
+        Console.WriteLine("--------");*/
         if(!translations.Contains(input)) return;
             
         isCorrect = true;
+        showHint = false;
         result.LearnedWords[words[index]] = true;
     }
 
