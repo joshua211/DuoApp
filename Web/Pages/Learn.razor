@@ -1,5 +1,6 @@
 @page "/Learn/{Name}"
 @page "/Learn"
+@using Core
 @inject IJSRuntime jsRuntime
 @inject IDuolingoClient client
 @inject NavigationManager nav
@@ -87,7 +88,7 @@
         {
             var skill = (await client.GetSkillsAsync()).First(s => s.UrlTitle == Name);
             title = skill.Name;
-            lexemes = skill.Lexemes;
+            lexemes = skill.Lexemes.Shuffle().ToList();
             words = new List<Word>();
             result = new LearnResult()
             {
