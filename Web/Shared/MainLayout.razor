@@ -6,7 +6,7 @@
 
 <div class="h-screen w-screen flex flex-col justify-start items-center">
     <Navbar/>
-    <MudPaper class="mt-10 mb-10 overflow-y-auto" Height="90%" Width="90%">
+    <MudPaper class="mt-10 mb-10 overflow-y-auto overflow-x-hidden" Height="90%" Width="90%">
         @Body
     </MudPaper>
 </div>
@@ -18,6 +18,7 @@
         Palette = new Palette()
         {
             Primary = "#58cc02",
+            Dark = "#a7a9ab",
             Secondary = Colors.Green.Accent4,
             AppbarBackground = Colors.Red.Default,
         },

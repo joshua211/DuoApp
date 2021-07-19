@@ -3,24 +3,45 @@
 @inject IValuePersistence persistence
 @inject NavigationManager nav
 
-@if(skills is null)
+@if (skills is null)
 {
     <div>Loading skills...</div>
 }
-else 
+else
 {
-    @if(skills.Any())
+    <MudToolBar Class="mb-5">
+        <MudTextField T="string" Label="Search"
+                         @bind-value="searchText"
+                         Style="width: 200px"
+                         Immediate="true"
+                         Clearable="true"
+                         AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"/>
+        <MudSwitch @bind-Checked="@showUnlearned" Label="Show all"/>
+    </MudToolBar>
+    @if (skills.Any())
     {
         var i = 0;
-        foreach(var skill in skillsToDisplay)
+        foreach (var skill in GetDisplaySkills())
         {
-            var color = i % 2 == 0 ? Color.Primary : Color.Secondary;
-            i++;
-            var link = $"/Learn/{skill.UrlTitle}";
-            <MudChip Link=@link style="margin: 0.5rem" Color=@color Size="Size.Large">@skill.Name</MudChip>
+            @if (skill.Learned)
+            {
+                var color = i % 2 == 0 ? Color.Primary : Color.Secondary;
+                i++;
+                var link = $"/Learn/{skill.UrlTitle}";
+                <MudChip Link=@link style="margin: 0.5rem" Color=@color Size="Size.Large">
+                    @skill.Name
+                </MudChip>
+            }
+            else
+            {
+                <MudChip  style="margin: 0.5rem" Color=@Color.Dark Disabled="true" Size="Size.Large">
+                    @skill.Name
+                </MudChip>
+            }
         }
     }
-    else {
+    else
+    {
         <div>No skills found!</div>
     }
 }
@@ -28,21 +49,30 @@ else
 @code {
 
     List<Skill> skills;
-    IEnumerable<Skill> skillsToDisplay;
 
-    protected async override Task OnInitializedAsync()
+    private bool showUnlearned = false;
+    private string searchText = "";
+
+    protected override async Task OnInitializedAsync()
     {
         var username = await persistence.GetValueAsync("username");
-        if(!string.IsNullOrEmpty(username))
+        if (!string.IsNullOrEmpty(username))
             await client.Authenticate(username);
 
-        if(!client.IsAuthenticated)
+        if (!client.IsAuthenticated)
             nav.NavigateTo("/login");
-         else
-         {
+        else
+        {
             skills = (await client.GetSkillsAsync())?.ToList() ?? new List<Skill>();
-            skillsToDisplay = skills.OrderBy(s => s.Name);
-         }
+        }
     }
+
+    private IEnumerable<Skill> GetDisplaySkills() => skills.Where(s =>
+    {
+        bool show = !(!s.Learned && !showUnlearned);
+        if (!string.IsNullOrEmpty(searchText) && !s.Name.ToLower().Contains(searchText.ToLower()))
+            show = false;
+        return show;
+    }).OrderBy(s => !s.Learned).ThenBy(s => s.Name);
 
 }
