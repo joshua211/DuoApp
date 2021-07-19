@@ -132,28 +132,27 @@
     {
         var translations = GetTranslation(words[index].Translation);
         var input = inputText.ToLower();
-    /*Console.WriteLine("--------");
+        /*Console.WriteLine("--------");
+        Console.WriteLine(words[index].Translation);
         foreach (var t in translations)
         {
             Console.WriteLine(input + " ? " + t);
-        }
-        Console.WriteLine("--------");*/
-        if (!translations.Contains(input)) return;
-        
+        }*/
+        Console.WriteLine("--------");
+        if(!translations.Contains(input)) return;
+            
         isCorrect = true;
         result.LearnedWords[words[index]] = true;
-
     }
+
     private static IEnumerable<string> GetTranslation(string translation) =>
-        translation.Replace(" ", string.Empty).ToLower().Split(',').Select(s =>
-        {
-            var i = s.IndexOf('(');
-            return i > 0 ? s.Remove(i, s.IndexOf(')') - i+1) : s;
-        });
-        
-    
-        
-                                                                                       
+        translation.ToLower()
+            .Split(new []{',', ' '})
+            .Select(s =>
+            {
+                var i = s.IndexOf('(');
+                return (i >= 0 ? s.Remove(i, s.IndexOf(')') - i + 1) : s).Trim().Trim('?');
+            }).Where(s => !string.IsNullOrWhiteSpace(s));
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
