@@ -41,7 +41,7 @@ namespace Core.Application
         {
             try
             {
-                var jwt = await persistence.GetValueAsync("jwt");
+                var jwt = (await persistence.GetValueAsync("jwt")).value;
                 if (jwt is null)
                     jwt = await GetValidJwtTokenAsync();
 
@@ -81,9 +81,14 @@ namespace Core.Application
 
         private async Task<IEnumerable<Skill>> GetSkills()
         {
-            var json = await persistence.GetValueAsync("skills");
-            if (!string.IsNullOrEmpty(json))
-                return JsonConvert.DeserializeObject<List<Skill>>(json);
+            var valueTuple = await persistence.GetValueAsync("skills");
+            string json;
+            if (DateTime.Now - valueTuple.storeDate < TimeSpan.FromMinutes(30))
+            {
+                json = valueTuple.value;
+                if (!string.IsNullOrEmpty(json))
+                    return JsonConvert.DeserializeObject<List<Skill>>(json);
+            }
 
             var request = new HttpRequestMessage()
             {
@@ -92,14 +97,13 @@ namespace Core.Application
             };
             try
             {
-
                 var result = await client.SendAsync(request);
                 result.EnsureSuccessStatusCode();
 
                 json = await result.Content.ReadAsStringAsync();
 
                 var userObject = JsonConvert.DeserializeObject<JObject>(json);
-                var skills = ((JArray)userObject["language_data"]["pt"]["skills"]);
+                var skills = ((JArray) userObject["language_data"]["pt"]["skills"]);
 
                 await persistence.StoreValueAsync("skills", skills.ToString());
                 return skills.ToObject<List<Skill>>();
@@ -108,6 +112,7 @@ namespace Core.Application
             {
                 System.Console.WriteLine(e);
             }
+
             return null;
         }
 
@@ -115,11 +120,12 @@ namespace Core.Application
 
         public async Task<Word> GetWordAsync(string id)
         {
-            var json = await persistence.GetValueAsync(id);
+            var json = (await persistence.GetValueAsync(id)).value;
             if (!string.IsNullOrEmpty(json))
                 return JsonConvert.DeserializeObject<Word>(json);
 
-            var result = await client.GetAsync($"/api/1/dictionary_page?lexeme_id={id}&use_cache=true&from_language_id=en");
+            var result =
+                await client.GetAsync($"/api/1/dictionary_page?lexeme_id={id}&use_cache=true&from_language_id=en");
             result.EnsureSuccessStatusCode();
 
             json = await result.Content.ReadAsStringAsync();

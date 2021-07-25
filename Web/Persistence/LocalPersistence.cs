@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Core.Interfaces;
@@ -14,11 +15,11 @@ namespace Web.Persistence
             this.factory = factory;
         }
 
-        public async Task<string> GetValueAsync(string name)
+        public async Task<(string value, DateTime storeDate)> GetValueAsync(string name)
         {
             using var scope = factory.CreateScope();
             var localStorage = scope.ServiceProvider.GetService<ILocalStorageService>();
-            return await localStorage.GetItemAsStringAsync(name);
+            return await localStorage.GetItemAsync<(string, DateTime)>(name);
         }
         
 
@@ -26,7 +27,7 @@ namespace Web.Persistence
         {
             using var scope = factory.CreateScope();
             var localStorage = scope.ServiceProvider.GetService<ILocalStorageService>();
-            await localStorage.SetItemAsStringAsync(name, value);
+            await localStorage.SetItemAsync(name, (value, DateTime.Now));
         }
     }
 }

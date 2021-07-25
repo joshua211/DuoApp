@@ -5,7 +5,9 @@
 
 @if (skills is null)
 {
-    <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+    <div class="h-screen w-screen flex justify-center">
+        <MudProgressCircular Indeterminate="true"></MudProgressCircular>
+    </div>
 }
 else
 {
@@ -55,7 +57,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var username = await persistence.GetValueAsync("username");
+        var username = (await persistence.GetValueAsync("username")).value;
         if (!string.IsNullOrEmpty(username))
             await client.Authenticate(username);
 
