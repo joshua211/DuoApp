@@ -14,19 +14,19 @@
             <div class="flex flex-row items-end mt-10">
                 @if (isLoadingWord)
                 {
-                    <MudSkeleton Height="30px" Width="100px" />
+                    <MudSkeleton Height="30px" Width="100px"/>
                 }
                 else
                 {
                     <MudText Class="mr-5">@words[index].Value:</MudText>
                 }
-                <MudTextField @bind-Value="inputText"  
-                              Immediate="true" 
-                              Clearable="true" 
-                              Disabled="isLoadingWord" 
-                              TextChanged="OnChange" 
-                              
-                              Variant="Variant.Text"></MudTextField>
+                <MudTextField @bind-Value="inputText"
+                              Immediate="true"
+                              Clearable="true"
+                              Disabled="isLoadingWord"
+                              TextChanged="OnChange"
+                              Variant="Variant.Text">
+                </MudTextField>
             </div>
             <div class="mt-6">
                 @if (isCorrect)
@@ -56,7 +56,7 @@
     }
     else
     {
-        <div>Loading..</div>
+        <MudProgressCircular Indeterminate="true"></MudProgressCircular>
     }
 </div>
 
@@ -65,6 +65,7 @@
 
     [Parameter]
     public string Name { get; set; }
+
     private ElementReference input;
     private List<string> lexemes;
     private List<Word> words;
@@ -76,7 +77,7 @@
     private bool isLoadingWord;
     private bool lessonDone;
     private bool showHint;
-    private LearnResult result;
+    private LessonResult result;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -90,10 +91,9 @@
             title = skill.Name;
             lexemes = skill.Lexemes.Shuffle().ToList();
             words = new List<Word>();
-            result = new LearnResult()
+            result = new LessonResult()
             {
                 Skill = skill,
-                LearnedWords = new Dictionary<Word, bool>(),
                 TotalWords = lexemes.Count
             };
             if (lexemes.Any())
@@ -104,7 +104,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-         await jsRuntime.InvokeVoidAsync("focusInput");
+        await jsRuntime.InvokeVoidAsync("focusInput");
     }
 
     private async Task NextWord()
@@ -114,25 +114,25 @@
             ShowResult();
             return;
         }
-        
+
         isCorrect = false;
         isLoadingWord = true;
         StateHasChanged();
         inputText = string.Empty;
 
-        var word = await client.GetWordAsync(lexemes[index +1]);
-        result.LearnedWords[word] = false;
+        var word = await client.GetWordAsync(lexemes[index + 1]);
+        result.LearnedWords.Add(new LearnedWord(word, false, false));
         words.Add(word);
 
         index++;
-        if (index +1 == lexemes.Count)
+        if (index + 1 == lexemes.Count)
             lessonDone = true;
         isLoadingWord = false;
     }
 
     private void ShowResult()
     {
-        result.CorrectWords = result.LearnedWords.Count(kv => kv.Value);
+        result.CorrectWords = result.LearnedWords.Count(kv => kv.Learned);
         objectService[result.Id] = result;
         nav.NavigateTo("/Result/" + result.Id);
     }
@@ -141,23 +141,18 @@
     {
         var translations = GetTranslation(words[index].Translation);
         var input = inputText.ToLower();
-        /*Console.WriteLine("--------");
-        Console.WriteLine(words[index].Translation);
-        foreach (var t in translations)
-        {
-            Console.WriteLine(input + " ? " + t);
-        }
-        Console.WriteLine("--------");*/
-        if(!translations.Contains(input)) return;
-            
+        if (!translations.Contains(input)) return;
+
+        result.LearnedWords[index].Learned = true;
+        result.LearnedWords[index].UsedHint = showHint;
+        
         isCorrect = true;
         showHint = false;
-        result.LearnedWords[words[index]] = true;
     }
 
     private static IEnumerable<string> GetTranslation(string translation) =>
         translation.ToLower()
-            .Split(new []{',', ' '})
+            .Split(new[] {',', ' '})
             .Select(s =>
             {
                 var i = s.IndexOf('(');

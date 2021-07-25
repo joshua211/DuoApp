@@ -16,10 +16,10 @@
     <MudExpansionPanels>
         @foreach (var word in result.LearnedWords)
         {
-            var color = word.Value ? "#58cc02" : "rgb(220, 38, 38)";
-            <MudExpansionPanel Style=@("color: " + color) Text="@word.Key.Value">
+            var color = word.Learned ? "#58cc02" : "rgb(220, 38, 38)";
+            <MudExpansionPanel Style=@("color: " + color) Text="@word.Word.Value">
                 <div style="color: black">
-                    @word.Key.Translation
+                    @word.Word.Translation
                 </div>
             </MudExpansionPanel>
         }
@@ -34,16 +34,15 @@
     [Parameter]
     public string Id { get; set; }
 
-    private LearnResult result;
+    private LessonResult result;
 
     protected override void OnParametersSet()
     {
-        result = service.Get<LearnResult>(Id);
+        result = service.Get<LessonResult>(Id);
         if (result is null)
         {
             snackbar.Add("No result found!", Severity.Warning);
             nav.NavigateTo("./");
         }
     }
-
 }
