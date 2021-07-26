@@ -3,5 +3,16 @@
         <img width="40px" style="padding: 4px 4px 4px 3px" class="rounded-full bg-white" src="icons/Duolingo.svg"/>
     </NavLink>
     <MudSpacer/>
-    <MudIconButton Icon="@Icons.Outlined.Info" Color="Color.Inherit"/>
+    <MudIconButton OnClick="() => drawerOpen = !drawerOpen" Icon="@Icons.Outlined.Info" Color="Color.Inherit"/>
 </MudAppBar>
+<InfoDrawer Close="CloseDrawer" ShouldOpen="drawerOpen"></InfoDrawer>
+
+@code
+{
+    private bool drawerOpen;
+
+    private void CloseDrawer()
+    {
+        drawerOpen = false;
+    }
+}

@@ -15,11 +15,11 @@ namespace Web.Persistence
             this.factory = factory;
         }
 
-        public async Task<(string value, DateTime storeDate)> GetValueAsync(string name)
+        public async Task<string> GetValueAsync(string name)
         {
             using var scope = factory.CreateScope();
             var localStorage = scope.ServiceProvider.GetService<ILocalStorageService>();
-            return await localStorage.GetItemAsync<(string, DateTime)>(name);
+            return await localStorage.GetItemAsStringAsync(name);
         }
         
 
@@ -27,7 +27,21 @@ namespace Web.Persistence
         {
             using var scope = factory.CreateScope();
             var localStorage = scope.ServiceProvider.GetService<ILocalStorageService>();
-            await localStorage.SetItemAsync(name, (value, DateTime.Now));
+            await localStorage.SetItemAsStringAsync(name, value);
+        }
+
+        public async Task ClearAsync()
+        {
+            using var scope = factory.CreateScope();
+            var localStorage = scope.ServiceProvider.GetService<ILocalStorageService>();
+            await localStorage.ClearAsync();
+        }
+
+        public async Task ClearAsync(string name)
+        {
+            using var scope = factory.CreateScope();
+            var localStorage = scope.ServiceProvider.GetService<ILocalStorageService>();
+            await localStorage.RemoveItemAsync(name);
         }
     }
 }

@@ -1,19 +1,16 @@
-using System.Net.WebSockets;
-using System.Net.Http;
+using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Core.Entities;
 using Core.Interfaces;
-using System;
-using System.Collections;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
-using System.Net.Http.Headers;
-using System.Linq;
-using Newtonsoft.Json.Linq;
-using System.IdentityModel.Tokens.Jwt;
 using Core.Options;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Core.Application
 {
@@ -41,7 +38,7 @@ namespace Core.Application
         {
             try
             {
-                var jwt = (await persistence.GetValueAsync("jwt")).value;
+                var jwt = await persistence.GetValueAsync("jwt");
                 if (jwt is null)
                     jwt = await GetValidJwtTokenAsync();
 
@@ -82,13 +79,10 @@ namespace Core.Application
         private async Task<IEnumerable<Skill>> GetSkills()
         {
             var valueTuple = await persistence.GetValueAsync("skills");
-            string json;
-            if (DateTime.Now - valueTuple.storeDate < TimeSpan.FromMinutes(30))
-            {
-                json = valueTuple.value;
+            string json = valueTuple;
                 if (!string.IsNullOrEmpty(json))
                     return JsonConvert.DeserializeObject<List<Skill>>(json);
-            }
+            
 
             var request = new HttpRequestMessage()
             {
@@ -110,7 +104,7 @@ namespace Core.Application
             }
             catch (Exception e)
             {
-                System.Console.WriteLine(e);
+                Console.WriteLine(e);
             }
 
             return null;
@@ -120,7 +114,7 @@ namespace Core.Application
 
         public async Task<Word> GetWordAsync(string id)
         {
-            var json = (await persistence.GetValueAsync(id)).value;
+            var json = await persistence.GetValueAsync(id);
             if (!string.IsNullOrEmpty(json))
                 return JsonConvert.DeserializeObject<Word>(json);
 
