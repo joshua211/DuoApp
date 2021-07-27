@@ -61,7 +61,7 @@ else
         if (!string.IsNullOrEmpty(username))
             await client.Authenticate(username);
 
-        if (!client.IsAuthenticated)
+        if (!(await client.IsAuthenticated()))
             nav.NavigateTo("/login");
         else
         {

@@ -26,13 +26,16 @@ namespace Core.Application
         {
             client = new HttpClient()
             {
-                BaseAddress = new Uri("https://www.duolingo.com/"),
+                BaseAddress = new Uri(options.BaseAddress),
             };
             this.persistence = persistence;
             this.options = options;
         }
 
-        public bool IsAuthenticated { get; private set; }
+        //TODO fix this so it always fetches the newest state
+        public async Task<bool> IsAuthenticated() =>
+            !string.IsNullOrEmpty(await persistence.GetValueAsync("username")) &&
+            !string.IsNullOrEmpty(await persistence.GetValueAsync("jwt"));
 
         public async Task<AuthenticationResult> Authenticate(string username)
         {
@@ -48,7 +51,6 @@ namespace Core.Application
                 await persistence.StoreValueAsync("jwt", jwt);
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
-                IsAuthenticated = true;
                 this.username = username;
 
                 return new AuthenticationResult(true, username);
@@ -62,13 +64,7 @@ namespace Core.Application
         private async Task<string> GetValidJwtTokenAsync()
         {
             var json = JsonConvert.SerializeObject(options.AuthObject);
-            var request = new HttpRequestMessage()
-            {
-                Content = new StringContent(json),
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("http://localhost:7071/api/Authenticate")
-            };
-            var result = await client.SendAsync(request);
+            var result = await client.PostAsync("api/Authenticate", new StringContent(json));
 
             result.EnsureSuccessStatusCode();
             return await result.Content.ReadAsStringAsync();
@@ -78,20 +74,13 @@ namespace Core.Application
 
         private async Task<IEnumerable<Skill>> GetSkills()
         {
-            var valueTuple = await persistence.GetValueAsync("skills");
-            string json = valueTuple;
-                if (!string.IsNullOrEmpty(json))
-                    return JsonConvert.DeserializeObject<List<Skill>>(json);
+            var json = await persistence.GetValueAsync("skills");
+            if (!string.IsNullOrEmpty(json))
+                return JsonConvert.DeserializeObject<List<Skill>>(json);
             
-
-            var request = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri($"http://localhost:7071/api/GetSkills?{username}")
-            };
             try
             {
-                var result = await client.SendAsync(request);
+                var result = await client.GetAsync($"api/GetSkills?{username}");
                 result.EnsureSuccessStatusCode();
 
                 json = await result.Content.ReadAsStringAsync();
@@ -118,8 +107,12 @@ namespace Core.Application
             if (!string.IsNullOrEmpty(json))
                 return JsonConvert.DeserializeObject<Word>(json);
 
-            var result =
-                await client.GetAsync($"/api/1/dictionary_page?lexeme_id={id}&use_cache=true&from_language_id=en");
+            var request = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://www.duolingo.com/api/1/dictionary_page?lexeme_id={id}&use_cache=true&from_language_id=en")
+            };
+            var result = await client.SendAsync(request);
             result.EnsureSuccessStatusCode();
 
             json = await result.Content.ReadAsStringAsync();

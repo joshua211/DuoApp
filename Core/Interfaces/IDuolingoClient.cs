@@ -6,7 +6,7 @@ namespace Core.Interfaces
 {
     public interface IDuolingoClient
     {
-        bool IsAuthenticated { get; }
+        Task<bool> IsAuthenticated();
         Task<AuthenticationResult> Authenticate(string username);
         Task<IEnumerable<Skill>> GetSkillsAsync();
         Task<Skill> GetSkillAsync(string name);
