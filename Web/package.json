@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build-css-dev": "tailwindcss build wwwroot/css/app.css -o wwwroot/css/tailwind/tailwind.min.css -c tailwind.config.js",
-    "build": "cross-env NODE_ENV=production tailwindcss build wwwroot/app.css -o wwwroot/css/tailwind/tailwind.min.css -c tailwind.config.js"
+    "build": "tailwindcss build wwwroot/css/app.css -o wwwroot/css/tailwind/tailwind.min.css -c tailwind.config.js"
   },
   "author": "",
   "license": "ISC",
