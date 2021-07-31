@@ -1,0 +1,17 @@
+POST http://localhost:7071/api/Authenticate HTTP/1.1
+Content-Type: application/json
+
+{
+    "distinctId": "782244993",
+    "timezone": "Europe/Berlin",
+    "fromLanguage": "en",
+    "learningLanguage": "pt",
+    "landingUrl": "https://www.duolingo.com/",
+    "initialReferrer": "https://www.duolingo.com/learn",
+    "lastReferrer": "https://www.google.com/"
+}
+
+###
+
+GET http://localhost:7071/api/GetSkills?name=JoshuaHillm HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjo4MDAzMTI0NjZ9.RsxKHTu7pAnjwVqDiKkIg9nzxtdrpWZSCWoChyxx8QQ

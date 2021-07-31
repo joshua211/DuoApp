@@ -5,8 +5,10 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -23,11 +25,9 @@ namespace Api
             this.logger = logger;
         }
 
-        [Function("Authenticate")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req,
-            FunctionContext executionContext)
+        [FunctionName("Authenticate")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
         {
-            HttpResponseData response;
             var json = await req.ReadAsStringAsync();
             var obj = JsonConvert.DeserializeObject(json);
 
@@ -41,20 +41,15 @@ namespace Api
             var result = await client.SendAsync(request);
             if (!result.IsSuccessStatusCode)
             {
-
-                response = req.CreateResponse(result.StatusCode);
-                return response;
+                return new StatusCodeResult((int)result.StatusCode);
             }
 
             if (result.Headers.TryGetValues("jwt", out var values))
             {
-                response = req.CreateResponse(HttpStatusCode.OK);
-                await response.WriteStringAsync(values.First());
-
-                return response;
+                return new ObjectResult(values.First());
             }
 
-            return req.CreateResponse(HttpStatusCode.BadRequest);
+            return new BadRequestResult();
         }
     }
 }

@@ -1,13 +1,15 @@
-using System.Runtime.CompilerServices;
-using System.Linq;
-using System.Net.Http;
-using System.Collections.Generic;
-using System.Net;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System.Net.Http;
+using Microsoft.Extensions.Primitives;
+using System.Linq;
 using System.Net.Http.Headers;
 
 namespace Api
@@ -23,44 +25,36 @@ namespace Api
             this.logger = logger;
         }
 
-        [Function("GetSkills")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req,
-            FunctionContext executionContext)
+        [FunctionName("GetSkills")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
-            HttpResponseData response;
-            var jwt = req.Headers.GetValues("Authorization").FirstOrDefault();
-            if (jwt is null)
+            StringValues jwt;
+            if (!req.Headers.TryGetValue("Authorization", out jwt))
             {
-                response = req.CreateResponse(HttpStatusCode.Unauthorized);
                 logger.LogWarning("No jwt header present");
 
-                return response;
+                return new UnauthorizedResult();
             }
 
-            string name = req.Url.Query.Trim('?');
+            req.Query.TryGetValue("Name", out var name);
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get,
                 RequestUri = new Uri($"https://www.duolingo.com/users/{name}")
             };
-            request.Headers.Add("Authorization", jwt);
+            request.Headers.Add("Authorization", jwt.First());
 
             var result = await client.SendAsync(request);
 
             if (!result.IsSuccessStatusCode)
             {
-                response = req.CreateResponse();
-                response.StatusCode = result.StatusCode;
+                logger.LogError($"{result.StatusCode} Failed to fetch access token: {result.ReasonPhrase}");
 
-                return response;
+                return new StatusCodeResult((int)result.StatusCode);
             }
 
-            var jsonStream = await result.Content.ReadAsStreamAsync();
-            response = req.CreateResponse(HttpStatusCode.OK);
-            response.Body = jsonStream;
-            response.Headers.Add("Content-Type", "application/json");
-
-            return response;
+            var json = await result.Content.ReadAsStringAsync();
+            return new ObjectResult(json);
         }
     }
 }
