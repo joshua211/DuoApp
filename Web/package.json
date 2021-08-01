@@ -1,0 +1,18 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build-css-dev": "tailwindcss build wwwroot/css/app.css -o wwwroot/css/tailwind/tailwind.min.css -c tailwind.config.js",
+    "build": "tailwindcss build wwwroot/css/app.css -o wwwroot/css/tailwind/tailwind.min.css -c tailwind.config.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "autoprefixer": "^10.2.5",
+    "postcss": "^8.2.15",
+    "postcss-cli": "^8.3.1",
+    "tailwindcss": "^2.1.2"
+  },
+  "description": ""
+}
