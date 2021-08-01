@@ -8,13 +8,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
-using Blazored.LocalStorage;
+using Web.Services;
 using Core.Interfaces;
 using Core.Application;
-using Core.Entities;
-using Web.Persistence;
+using Blazored.LocalStorage;
 using Core.Options;
-using Web.Services;
+using Web.Persistence;
 
 namespace Web
 {

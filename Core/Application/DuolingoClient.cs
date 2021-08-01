@@ -77,16 +77,16 @@ namespace Core.Application
             var json = await persistence.GetValueAsync("skills");
             if (!string.IsNullOrEmpty(json))
                 return JsonConvert.DeserializeObject<List<Skill>>(json);
-            
+
             try
             {
-                var result = await client.GetAsync($"api/GetSkills?{username}");
+                var result = await client.GetAsync($"api/GetSkills?name={username}");
                 result.EnsureSuccessStatusCode();
 
                 json = await result.Content.ReadAsStringAsync();
 
                 var userObject = JsonConvert.DeserializeObject<JObject>(json);
-                var skills = ((JArray) userObject["language_data"]["pt"]["skills"]);
+                var skills = ((JArray)userObject["language_data"]["pt"]["skills"]);
 
                 await persistence.StoreValueAsync("skills", skills.ToString());
                 return skills.ToObject<List<Skill>>();

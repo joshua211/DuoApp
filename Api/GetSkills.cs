@@ -36,7 +36,7 @@ namespace Api
                 return new UnauthorizedResult();
             }
 
-            req.Query.TryGetValue("Name", out var name);
+            req.Query.TryGetValue("name", out var name);
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get,
