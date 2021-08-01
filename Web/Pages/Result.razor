@@ -1,0 +1,48 @@
+﻿@page "/Result/{Id}"
+@inject ObjectService service
+@inject NavigationManager nav
+@inject ISnackbar snackbar
+
+@if (result is not null)
+{
+    <div>
+        <MudChart ChartType="ChartType.Pie"
+                  Width="300px" Height="300px"
+                  ChartOptions="@(new ChartOptions() {ChartPalette = new[] {"#58cc02", "#e55d5e"}})"
+                  InputData="@(new double[] {result.CorrectWords, result.TotalWords - result.CorrectWords})"
+                  InputLabels="@(new[] {"Correct", "Wrong"})">
+        </MudChart>
+    </div>
+    <MudExpansionPanels>
+        @foreach (var word in result.LearnedWords)
+        {
+            var color = word.Learned ? "#58cc02" : "rgb(220, 38, 38)";
+            <MudExpansionPanel Style=@("color: " + color) Text="@word.Word.Value">
+                <div style="color: black">
+                    @word.Word.Translation
+                </div>
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
+    <div class="mt-10 mb-5 flex justify-center">
+        <MudButton Color="Color.Primary" Variant="Variant.Outlined">Try again</MudButton>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+
+    private LessonResult result;
+
+    protected override void OnParametersSet()
+    {
+        result = service.Get<LessonResult>(Id);
+        if (result is null)
+        {
+            snackbar.Add("No result found!", Severity.Warning);
+            nav.NavigateTo("./");
+        }
+    }
+}

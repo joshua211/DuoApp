@@ -1,0 +1,52 @@
+﻿@inject IValuePersistence persistence
+@inject IDuolingoClient client
+@inject NavigationManager nav
+
+@if (ShouldOpen)
+{
+    <div @onclick="Close" style="background-color: rgba(100, 100, 100, 0.7)"
+         class="w-screen h-screen flex justify-center items-center absolute z-30">
+        <MudPaper @onclick:stopPropagation="true" Style="@(ShouldOpen ? "" : "display: none;")" Width="300px" Height="400px">
+            <div class="flex flex-col items-center justify-between p-5 w-full h-full">
+                <MudText Align="Align.Center">Simple app to learn vocabulary from <MudLink Href="https://www.duolingo.com">Duolingo</MudLink> lessons</MudText>
+                <div class="flex flex-col">
+                    <MudButton Color="Color.Info" OnClick="@(() => ResetCache("skills"))">Reset Skills</MudButton>
+                    <MudButton Color="Color.Warning" OnClick="@(() => ResetCache())">Reset Cache</MudButton>
+                    @if (isAuthenticated)
+                    {
+                        <MudButton Color="Color.Error" OnClick="@(() => ResetCache("username"))">Logout</MudButton>
+                    }
+                </div>
+            </div>
+        </MudPaper>
+    </div>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public bool ShouldOpen { get; set; }
+    [Parameter]
+    public EventCallback Close { get; set; }
+
+    private bool isAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isAuthenticated = await client.IsAuthenticated();
+    }
+
+    private async Task ResetCache(string name = null)
+    {
+        if (name is null)
+            await persistence.ClearAsync();
+        else
+            await persistence.ClearAsync(name);
+        
+        nav.NavigateTo("/", true);
+    }
+    
+
+}

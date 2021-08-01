@@ -1,17 +1,29 @@
 @inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudThemeProvider Theme="MyCustomTheme"/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
-    <div class="main">
-        <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
-        </div>
-
-        <div class="content px-4">
-            @Body
-        </div>
-    </div>
+<div class="h-screen w-screen flex flex-col justify-start items-center">
+    <Navbar/>
+    <MudPaper class="mt-10 mb-10 overflow-y-auto overflow-x-hidden" Height="90%" Width="90%">
+        @Body
+    </MudPaper>
 </div>
+
+@code {
+
+    MudTheme MyCustomTheme = new MudTheme()
+    {
+        Palette = new Palette()
+        {
+            Primary = "#58cc02",
+            Dark = "#a7a9ab",
+            Secondary = Colors.Green.Accent4,
+            AppbarBackground = Colors.Red.Default,
+        },
+    };
+
+    
+
+}
