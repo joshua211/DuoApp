@@ -33,7 +33,7 @@ namespace Api
             {
                 logger.LogWarning("No jwt header present");
 
-                return new UnauthorizedResult();
+                return new UnprocessableEntityObjectResult("No jwt header present");
             }
 
             req.Query.TryGetValue("name", out var name);
