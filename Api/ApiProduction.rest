@@ -1,0 +1,17 @@
+POST https://yellow-cliff-09dafc403.azurestaticapps.net/api/Authenticate HTTP/1.1
+Content-Type: application/json
+
+{
+    "distinctId": "782244993",
+    "timezone": "Europe/Berlin",
+    "fromLanguage": "en",
+    "learningLanguage": "pt",
+    "landingUrl": "https://www.duolingo.com/",
+    "initialReferrer": "https://www.duolingo.com/learn",
+    "lastReferrer": "https://www.google.com/"
+}
+
+###
+
+GET https://yellow-cliff-09dafc403.azurestaticapps.net/api/GetSkills?name=JoshuaHillm HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjo4MDA5MjgxNDF9.SG8mJjylmMmx5XyjXHrxI-j1qMjNnobUvJcj77mHMbs
