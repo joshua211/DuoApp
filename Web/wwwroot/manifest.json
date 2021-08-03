@@ -1,6 +1,6 @@
 {
-  "name": "Web",
-  "short_name": "Web",
+  "name": "Duolingo Vocabulary",
+  "short_name": "Vocabulary",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
