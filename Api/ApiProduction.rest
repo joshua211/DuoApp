@@ -14,3 +14,7 @@ Content-Type: application/json
 ###
 GET https://duoappapi.azurewebsites.net/api/getskills?name=JoshuaHillm HTTP/1.1
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjo4MDA5MjgxNDF9.SG8mJjylmMmx5XyjXHrxI-j1qMjNnobUvJcj77mHMbs
+
+###
+GET https://duoappapi.azurewebsites.net/api/GetWord?id=088e3804c1c0a9e6fb4db9fc1cef4990 HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjo4MDAzMTI0NjZ9.RsxKHTu7pAnjwVqDiKkIg9nzxtdrpWZSCWoChyxx8QQ

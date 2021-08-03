@@ -15,3 +15,8 @@ Content-Type: application/json
 
 GET http://localhost:7071/api/GetSkills?name=JoshuaHillm HTTP/1.1
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjo4MDAzMTI0NjZ9.RsxKHTu7pAnjwVqDiKkIg9nzxtdrpWZSCWoChyxx8QQ
+
+###
+
+GET http://localhost:7071/api/GetWord?id=088e3804c1c0a9e6fb4db9fc1cef4990 HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjo4MDAzMTI0NjZ9.RsxKHTu7pAnjwVqDiKkIg9nzxtdrpWZSCWoChyxx8QQ

@@ -107,12 +107,7 @@ namespace Core.Application
             if (!string.IsNullOrEmpty(json))
                 return JsonConvert.DeserializeObject<Word>(json);
 
-            var request = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri($"https://www.duolingo.com/api/1/dictionary_page?lexeme_id={id}&use_cache=true&from_language_id=en")
-            };
-            var result = await client.SendAsync(request);
+            var result = await client.GetAsync($"api/getword?id={id}");
             result.EnsureSuccessStatusCode();
 
             json = await result.Content.ReadAsStringAsync();
