@@ -48,7 +48,9 @@ namespace Api
 
             if (!result.IsSuccessStatusCode)
             {
-                logger.LogError($"{result.StatusCode} Failed to fetch access token: {result.ReasonPhrase}");
+                logger.LogError($"{result.StatusCode} Failed to get skills: {result.ReasonPhrase}");
+                logger.LogTrace("Request: " + JsonConvert.SerializeObject(request));
+                logger.LogTrace("Result: " + JsonConvert.SerializeObject(result));
 
                 return new StatusCodeResult((int)result.StatusCode);
             }
