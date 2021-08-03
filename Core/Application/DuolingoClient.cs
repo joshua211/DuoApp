@@ -64,7 +64,7 @@ namespace Core.Application
         private async Task<string> GetValidJwtTokenAsync()
         {
             var json = JsonConvert.SerializeObject(options.AuthObject);
-            var result = await client.PostAsync("api/Authenticate", new StringContent(json));
+            var result = await client.PostAsync("api/authenticate", new StringContent(json));
 
             result.EnsureSuccessStatusCode();
             return await result.Content.ReadAsStringAsync();
@@ -80,7 +80,7 @@ namespace Core.Application
 
             try
             {
-                var result = await client.GetAsync($"api/GetSkills?name={username}");
+                var result = await client.GetAsync($"api/getskills?name={username}");
                 result.EnsureSuccessStatusCode();
 
                 json = await result.Content.ReadAsStringAsync();
