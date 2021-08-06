@@ -1,0 +1,36 @@
+@inject IDuolingoClient client
+@inject NavigationManager nav
+@inject IValuePersistence persistence
+
+@if (showContent)
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private bool showContent;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        showContent = false;
+        if (nav.Uri.ToLower().Contains("login") || client.IsAuthenticated)
+        {
+            showContent = true;
+            return;
+        }
+
+        var username = await persistence.GetValueAsync("username");
+        if (!string.IsNullOrEmpty(username))
+        {
+            await client.Authenticate(username);
+            showContent = true;
+        }
+
+        if (!client.IsAuthenticated)
+            nav.NavigateTo("/login");
+        
+    }
+}
