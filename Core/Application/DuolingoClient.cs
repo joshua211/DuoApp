@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Core.Entities;
+using Core.Exceptions;
 using Core.Interfaces;
 using Core.Options;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,6 @@ namespace Core.Application
         private readonly ILogger<IDuolingoClient> logger;
         private readonly ClientOptions options;
         private readonly IValuePersistence persistence;
-        private string username;
 
         public DuolingoClient(IValuePersistence persistence, ClientOptions options)
         {
@@ -32,10 +32,9 @@ namespace Core.Application
             this.options = options;
         }
 
-        //TODO fix this so it always fetches the newest state
-        public async Task<bool> IsAuthenticated() =>
-            !string.IsNullOrEmpty(await persistence.GetValueAsync("username")) &&
-            !string.IsNullOrEmpty(await persistence.GetValueAsync("jwt"));
+        public bool IsAuthenticated { get; private set; }
+        
+        public string username { get; private set; }
 
         public async Task<AuthenticationResult> Authenticate(string username)
         {
@@ -52,6 +51,7 @@ namespace Core.Application
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
                 this.username = username;
+                this.IsAuthenticated = true;
 
                 return new AuthenticationResult(true, username);
             }
@@ -74,6 +74,9 @@ namespace Core.Application
 
         private async Task<IEnumerable<Skill>> GetSkills()
         {
+            if (!IsAuthenticated)
+                throw new AuthenticationException("Client is not authenticated!");
+
             var json = await persistence.GetValueAsync("skills");
             if (!string.IsNullOrEmpty(json))
                 return JsonConvert.DeserializeObject<List<Skill>>(json);
@@ -103,6 +106,9 @@ namespace Core.Application
 
         public async Task<Word> GetWordAsync(string id)
         {
+            if (!IsAuthenticated)
+                throw new AuthenticationException("Client is not authenticated!");
+
             var json = await persistence.GetValueAsync(id);
             if (!string.IsNullOrEmpty(json))
                 return JsonConvert.DeserializeObject<Word>(json);
@@ -114,6 +120,7 @@ namespace Core.Application
             var word = JsonConvert.DeserializeObject<Word>(json);
 
             await persistence.StoreValueAsync(id, JsonConvert.SerializeObject(word));
+
             return word;
         }
     }
