@@ -12,9 +12,10 @@
                 <div class="flex flex-col">
                     <MudButton Color="Color.Info" OnClick="@(() => ResetCache("skills"))">Reset Skills</MudButton>
                     <MudButton Color="Color.Warning" OnClick="@(() => ResetCache())">Reset Cache</MudButton>
-                    @if (isAuthenticated)
+                    @if (client.IsAuthenticated)
                     {
                         <MudButton Color="Color.Error" OnClick="@(() => ResetCache("username"))">Logout</MudButton>
+                        <MudText Typo="Typo.subtitle2">Logged in as @client.username</MudText>
                     }
                 </div>
             </div>
@@ -26,16 +27,16 @@
 
 
 @code {
+
     [Parameter]
     public bool ShouldOpen { get; set; }
+
     [Parameter]
     public EventCallback Close { get; set; }
 
-    private bool isAuthenticated;
 
     protected override async Task OnInitializedAsync()
     {
-        isAuthenticated = await client.IsAuthenticated();
     }
 
     private async Task ResetCache(string name = null)
@@ -44,9 +45,8 @@
             await persistence.ClearAsync();
         else
             await persistence.ClearAsync(name);
-        
+
         nav.NavigateTo("/", true);
     }
-    
 
 }

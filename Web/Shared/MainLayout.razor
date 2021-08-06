@@ -4,12 +4,16 @@
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
-<div class="h-screen w-screen flex flex-col justify-start items-center">
-    <Navbar/>
-    <MudPaper class="mt-10 mb-10 overflow-y-auto overflow-x-hidden" Height="90%" Width="90%">
-        @Body
-    </MudPaper>
-</div>
+<ClientAuthenticator>
+    <div class="h-screen w-screen flex flex-col justify-start items-center">
+        <Navbar/>
+        <MudPaper class="mt-10 mb-10 overflow-y-auto overflow-x-hidden" Height="90%" Width="90%">
+            @Body
+        </MudPaper>
+    </div>
+</ClientAuthenticator>
+
+
 
 @code {
 
@@ -24,6 +28,6 @@
         },
     };
 
-    
+
 
 }
